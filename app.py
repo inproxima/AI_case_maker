@@ -176,7 +176,8 @@ with tab1:
         
         Important instructions:
         - Preserve the academic narrative flow of the case study
-        - Keep all main section headings exactly as they are (numbered 1-7)
+        - Maintain the EXACT same section structure as the original case study - do not add or remove any sections
+        - Keep all section headings exactly as they are in the original
         - Do NOT add any subheadings
         - Maintain all original content and insights
         - Only modify the citation placeholders to use proper academic citations
@@ -457,7 +458,7 @@ with tab1:
             st.error("Please fill out at least the Course Level, Educational Context, Problem/Goal, and AI Tools fields before generating the case study.")
         else:
             with st.spinner("Generating your case study..."):
-                # Prepare the structured sections
+                # Prepare the structured sections and check if they're empty
                 section1 = f"""
                 Course Level: {course_level}
                 
@@ -514,36 +515,44 @@ with tab1:
                 Recommendations: {recommendations}
                 """
                 
+                # Check which sections have content
+                section_content = {
+                    "1. Introduction and Context of AI Use": section1.strip(),
+                    "2. Description of AI Technology": section2.strip(),
+                    "3. Implementation Process": section3.strip(),
+                    "4. Ethical and Inclusive Considerations": section4.strip(),
+                    "5. Outcomes and Educational Impact": section5.strip(),
+                    "6. Challenges and Limitations of AI Implementation": section6.strip(),
+                    "7. Sustainability and Future AI Use": section7.strip()
+                }
+                
+                # Create the case study structure with only non-empty sections
+                case_study_sections = ""
+                for title, content in section_content.items():
+                    # Check if the section has any actual content beyond field labels
+                    has_content = False
+                    for line in content.split('\n'):
+                        # Skip lines that are just field labels without content
+                        if ':' in line and line.split(':', 1)[1].strip() == '':
+                            continue
+                        if line.strip():  # Any non-empty line that's not just a field label
+                            has_content = True
+                            break
+                    
+                    if has_content:
+                        case_study_sections += f"\n\n{title}\n{content}\n"
+                
                 # Prepare prompt for case study generation
                 case_study_prompt = f"""
                 Generate a comprehensive case study in APA 7th edition format about AI implementation in an educational context based on the following information.
                 
-                The case study should be written as a cohesive academic narrative that flows naturally between topics, while covering these key sections:
-                
-                1. Introduction and Context of AI Use
-                {section1}
-                
-                2. Description of AI Technology
-                {section2}
-                
-                3. Implementation Process
-                {section3}
-                
-                4. Ethical and Inclusive Considerations
-                {section4}
-                
-                5. Outcomes and Educational Impact
-                {section5}
-                
-                6. Challenges and Limitations of AI Implementation
-                {section6}
-                
-                7. Sustainability and Future AI Use
-                {section7}
+                The case study should be written as a cohesive academic narrative that flows naturally between topics, while covering only these sections that have content:
+                {case_study_sections}
                 
                 Format guidelines:
                 - Write in a flowing academic narrative style that connects ideas across sections
-                - Include ONLY the main section headings (numbered 1-7 as above) to improve readability
+                - Include ONLY the main section headings as provided above to improve readability
+                - DO NOT include sections that were not provided in the input
                 - Do NOT include any subheadings within sections
                 - Create placeholder for citations for any academic claim.
                 - The tone should be academic but accessible, with a focus on practical insights
