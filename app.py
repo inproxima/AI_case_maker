@@ -7,6 +7,10 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
+# Define default model and fallback
+DEFAULT_MODEL = "gpt-4"
+SEARCH_MODEL = os.getenv("OPENAI_MODEL_SEARCH", "gpt-4")
+
 # Initialize OpenAI client
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
@@ -106,8 +110,9 @@ with tab1:
                 """
                 
                 completion = client.chat.completions.create(
-                    model="gpt-4o-search-preview",
-                    web_search_options={},  # Enable web search
+                    model=SEARCH_MODEL,
+                    # Make web_search_options conditional
+                    **({"web_search_options": {}} if SEARCH_MODEL in os.getenv("OPENAI_MODEL_SEARCH", "gpt-4") else {}),
                     messages=[
                         {"role": "user", "content": search_prompt}
                     ]
@@ -188,7 +193,7 @@ with tab1:
         try:
             # Call OpenAI to rewrite the case study with proper citations
             completion = client.chat.completions.create(
-                model="gpt-4.1",
+                model=DEFAULT_MODEL,
                 messages=[
                     {"role": "developer", "content": "You are an expert academic writer specializing in education technology and AI implementation case studies. You follow APA 7th edition formatting perfectly."},
                     {"role": "user", "content": citation_prompt}
@@ -553,7 +558,7 @@ with tab1:
                 
                 # Generate the case study using OpenAI API
                 completion = client.chat.completions.create(
-                    model="gpt-4.1",  # Using GPT-4 for higher quality output
+                    model=DEFAULT_MODEL,  # Using GPT-4 for higher quality output
                     messages=[
                         {"role": "developer", "content": "You are an expert academic writer specializing in education technology and AI implementation case studies. You follow APA 7th edition formatting perfectly."},
                         {"role": "user", "content": case_study_prompt}
@@ -584,7 +589,7 @@ with tab1:
                     
                     # Generate the review questions using OpenAI API
                     review_completion = client.chat.completions.create(
-                        model="gpt-4.1",
+                        model=DEFAULT_MODEL,
                         messages=[
                             {"role": "developer", "content": "You are an expert academic reviewer who provides constructive feedback on case studies about AI in education."},
                             {"role": "user", "content": review_prompt}
